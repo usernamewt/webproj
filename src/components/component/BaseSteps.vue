@@ -54,7 +54,6 @@ const steps = [
 const items = steps.map((item) => ({ key: item.title, title: item.title }));
 
 const handelChange = (c: number) => {
-  console.log(c);
   current.value = c;
 };
 </script>

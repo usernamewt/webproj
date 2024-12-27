@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
 import Header from "./layout/Header.vue";
-import { getStorage } from "../utils/storage";
 import router from "../router";
-import {
-  UnorderedListOutlined,
-  ApiOutlined,
-  FolderOpenOutlined,
-} from "@ant-design/icons-vue";
+import { UnorderedListOutlined } from "@ant-design/icons-vue";
 import { useTestStore } from "../store";
 const baseStore = useTestStore();
 const type = ref("equipmentlist");
@@ -32,15 +27,6 @@ const onBreakpoint = (broken: boolean) => {
   console.log(broken);
 };
 
-// 查询表单
-// const handelSearchVal = (formVal: any) => {
-//   console.log(formVal);
-// };
-
-// const handelReset = () => {
-//   console.log("reset");
-// };
-
 // 当前选中的menu
 const selectedKeys = ref<string[]>(["1"]);
 
@@ -57,19 +43,8 @@ const handelmenuswitch = (item: any) => {
       router.push("/equipmentlist");
   }
 };
-
-// 进入首页判断是否有登陆信息
-// TODO
-onMounted(() => {
-  const userInfo = getStorage("userInfo");
-  if (!userInfo.username) {
-    router.push("/login");
-  } else {
-    // getList();
-  }
-});
+onMounted(() => {});
 </script>
-
 <template>
   <a-layout style="min-height: 100vh">
     <a-layout-sider
@@ -78,7 +53,7 @@ onMounted(() => {
       @collapse="onCollapse"
       @breakpoint="onBreakpoint"
     >
-      <div class="logo">SD-WAN</div>
+      <div class="logo">AppFast - 网讯达</div>
       <a-menu
         v-model:selectedKeys="selectedKeys"
         theme="dark"
@@ -89,14 +64,10 @@ onMounted(() => {
           <UnorderedListOutlined />
           <span class="nav-text">设备列表</span>
         </a-menu-item>
-        <a-menu-item key="2">
+        <!-- <a-menu-item key="2">
           <ApiOutlined />
           <span class="nav-text">基础设置</span>
-        </a-menu-item>
-        <a-menu-item key="3">
-          <FolderOpenOutlined />
-          <span class="nav-text">资源管理</span>
-        </a-menu-item>
+        </a-menu-item> -->
       </a-menu>
     </a-layout-sider>
     <a-layout>

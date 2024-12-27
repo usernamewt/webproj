@@ -101,9 +101,7 @@ const onFinish = () => {
       setToken("123456");
       router.push("/");
     })
-    .catch(() => {
-      console.log("error");
-    });
+    .catch(() => {});
 };
 </script>
 

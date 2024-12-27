@@ -102,7 +102,7 @@
         label="出口"
       >
         <a-space wrap>
-          <a-checkable-tag
+          <!-- <a-checkable-tag
             v-for="(tag, index) in tagsData"
             :key="tag"
             v-model:checked="librarySelectTags[index]"
@@ -110,7 +110,16 @@
             @change="() => handleChange(tag, '1')"
           >
             {{ tag.location }}
-          </a-checkable-tag>
+          </a-checkable-tag> -->
+
+          <a-radio-group v-model:value="libraryTag">
+            <a-radio
+              v-for="tag in tagsData"
+              :key="tag"
+              :value="tag.gateway_ip"
+              >{{ tag.location }}</a-radio
+            >
+          </a-radio-group>
         </a-space>
       </a-form-item>
 
@@ -159,15 +168,14 @@
       </a-form-item>
       <a-form-item label="出口">
         <a-space wrap>
-          <a-checkable-tag
-            v-for="(tag, index) in tagsData"
-            :key="tag"
-            v-model:checked="customSelectTags[index]"
-            style="cursor: pointer"
-            @change="() => handleChange(tag, '0')"
-          >
-            {{ tag.location }}
-          </a-checkable-tag>
+          <a-radio-group v-model:value="customTag">
+            <a-radio
+              v-for="tag in tagsData"
+              :key="tag"
+              :value="tag.gateway_ip"
+              >{{ tag.location }}</a-radio
+            >
+          </a-radio-group>
         </a-space>
       </a-form-item>
       <a-form-item :wrapperCol="{ span: 24 }" style="text-align: center">
@@ -185,9 +193,8 @@ import { message } from "ant-design-vue";
 import { ref, onBeforeUnmount, onMounted, nextTick } from "vue";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons-vue";
 import type { Rule } from "ant-design-vue/es/form";
-import { getPreSetList, getOutPort, addAccelerate } from "../../../api/user";
+import { getPreSetList, getOutPort } from "../../../api/user";
 import { useRoute } from "vue-router";
-import router from "../../../router";
 const form = ref({
   target: 1,
 });
@@ -213,9 +220,9 @@ const data = ref<any[]>([]);
 const clicked = ref(false);
 const tagsData = ref([]);
 //
-const customSelectTags = ref<any>([]);
+const customTag = ref<any>();
 //
-const librarySelectTags = ref<any>([]);
+const libraryTag = ref<any>();
 // 资料库
 const libraryList = ref<any>([]);
 const searchList = ref<any>([]);
@@ -223,6 +230,8 @@ const initLoading = ref(true);
 const loading = ref(false);
 const pageSize = ref(5);
 const current = ref(1);
+
+const emits = defineEmits(["nextStep", "prevStep"]);
 // deviceId
 const deviceId = ref("");
 // 选中资料库
@@ -234,16 +243,8 @@ const removeItem = (item: any) => {
   });
 };
 
-/**
- * {
-  "device_id": 0,
-  "resource_name": "string",
-  "resource_type": 0,
-  "urls": []
-}
- */
-// 处理提交下一步
-const handleSubmit = () => {
+// 获取当前param
+const getParams = () => {
   let params: any = {
     resource_type: "",
     resource_name: "",
@@ -252,55 +253,33 @@ const handleSubmit = () => {
     urls: [],
     node_ip: "",
   };
-  // console.log(librarySelectTags.value);
-  console.log(
-    tagsData.value[librarySelectTags.value.findIndex((i: any) => i)].location
-  );
   //   资源库
   if (form.value.target === 1) {
-    library.value!.validate().then(() => {
-      if (choosedLibrary.value.length === 0) {
-        message.error("请选择加速资源");
-        return;
-      }
-
-      params.node_ip =
-        tagsData.value[
-          librarySelectTags.value.findIndex((i: any) => i)!
-        ].location;
-      params.resource_list = choosedLibrary.value.map((i: any) => {
-        return i.resource_name;
-      });
-      params.resource_type = "1";
-      clicked.value = true;
-      addAccelerate(params).then((res: any) => {
-        if (res.code === 0) {
-          router.push("/deviceList");
-        } else {
-          message.error(res.msg);
-        }
-      });
+    if (choosedLibrary.value.length === 0) {
+      message.error("请选择加速资源");
+      return false;
+    }
+    params.node_ip = libraryTag.value;
+    params.resource_list = choosedLibrary.value.map((i: any) => {
+      return i.resource_name;
     });
+    params.resource_type = "1";
+    clicked.value = true;
   }
   //   自定义
   else {
     if (data.value.length === 0) {
       message.error("请添加url");
-      return;
+      return false;
     }
-    params.node_ip =
-      tagsData.value[customSelectTags.value.findIndex((i: any) => i)!].location;
-    params.urls = data.value.map((i) => i.url);
+    params.node_ip = customTag.value;
     params.resource_type = "0";
     params.resource_name = customform.value.device;
-    addAccelerate(params).then((res: any) => {
-      if (res.code === 0) {
-        router.push("/deviceList");
-      } else {
-        message.error(res.msg);
-      }
+    params.urls = data.value.map((el: any) => {
+      return el.url;
     });
   }
+  return params;
 };
 
 // 资料库规则
@@ -324,6 +303,17 @@ onMounted(() => {
   getOut();
   getAcc();
 });
+
+// 获取出口
+const getOut = () => {
+  getOutPort().then((res: any) => {
+    if (res.code === 0) {
+      tagsData.value = res.data;
+    } else {
+      message.error(res.msg);
+    }
+  });
+};
 
 // 获取加速资源
 const getAcc = () => {
@@ -365,6 +355,7 @@ const nextPage = (val: number) => {
   });
 };
 
+// 判断是否是url
 const isUrl = (val: string) => {
   let regex =
     /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
@@ -419,42 +410,17 @@ const addSource = (item: any) => {
   }
 };
 
-// 获取出口
-const getOut = () => {
-  getOutPort().then((res: any) => {
-    if (res.code === 0) {
-      tagsData.value = res.data;
-      customSelectTags.value = new Array(res.data.length).fill(false);
-      librarySelectTags.value = new Array(res.data.length).fill(false);
-    } else {
-      message.error(res.msg);
-    }
-  });
-};
-
-// 出口选择
-const handleChange = (tag: any, type: any) => {
-  if (type === "0") {
-    customSelectTags.value = customSelectTags.value.map((i: any, index) => {
-      if (tag === tagsData.value[index]) {
-        return true;
-      } else {
-        return false;
-      }
-    });
-  } else {
-    librarySelectTags.value = librarySelectTags.value.map((i: any, index) => {
-      if (tag === tagsData.value[index]) {
-        return true;
-      } else {
-        return false;
-      }
-    });
+// 处理提交下一步
+const handleSubmit = () => {
+  const params = getParams();
+  if (params) {
+    emits("nextStep", params);
   }
 };
 
+// 上一步
 const backToList = () => {
-  router.push("/deviceList");
+  emits("prevStep");
 };
 
 onBeforeUnmount(() => {

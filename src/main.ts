@@ -9,6 +9,14 @@ import 'ant-design-vue/dist/reset.css';
 import router from './router/index.ts';
 import {createPinia} from 'pinia'
  
+
+const app =  createApp(App)
 const store = createPinia()
 
-createApp(App).use(Vant).use(i18n).use(ElementPlus).use(router).use(store).mount('#app')
+app.use(Vant)
+app.use(store)
+app.use(i18n)
+app.use(ElementPlus)
+app.use(router)
+
+app.mount('#app')

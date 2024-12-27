@@ -1,5 +1,5 @@
 <template>
-  <div class="cards">
+  <div class="cards" v-if="dataSource.length > 0">
     <a-card
       v-for="item in dataSource"
       :key="item.id"
@@ -23,6 +23,7 @@
       </a-card-meta>
     </a-card>
   </div>
+  <a-empty v-else />
 </template>
 
 <script lang="ts" setup>
@@ -32,11 +33,11 @@ import { onMounted, ref } from "vue";
 import { getEquipmentList } from "../../api/user";
 import router from "../../router";
 import { useTestStore } from "../../store";
+import { getStorage } from "../../utils/storage";
 const dataSource = ref<any>([]);
 onMounted(() => {
   baseStore.header = "设备列表";
-  // TODO:对接用户id
-  getEquipmentList("2").then((res) => {
+  getEquipmentList(getStorage("uid")).then((res) => {
     if (res.code === 0) {
       dataSource.value = res.data;
     } else {
@@ -60,8 +61,6 @@ const addSource = (item: any) => {
 
 // 资源列表
 const toSourceList = (item: any) => {
-  console.log(item);
-
   baseStore.header = "资源列表";
   router.push("/sourceList/" + item.id);
 };

@@ -38,7 +38,6 @@ let getAccList = async () => {
   let res = await getAccelerateList("7");
   if (res.code == 0) {
     dataSource.value = res.data as any;
-    console.log("加速资源", dataSource.value);
   }
 };
 const columns = [
@@ -71,11 +70,8 @@ const dataSource = ref<DataItem[]>([]);
 const getAccUrl = async (id: any) => {
   // 真实请求
   // let res = await getAccelerateUrl(id.id);
-  // 模拟请求
-  console.log(id);
   let res = await getAccelerateUrl("2");
   if (res.code == 0) {
-    console.log(res);
     baseStore.isShowUrl = true;
     baseStore.currentUrl = {
       urllist: res.data,

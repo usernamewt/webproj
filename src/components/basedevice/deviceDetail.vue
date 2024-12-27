@@ -43,13 +43,15 @@ import { getEquipmentInfo, editEquipmentInfo } from "../../api/user";
 import { message } from "ant-design-vue";
 let routes = useRoute();
 onMounted(() => {
-  getEquipmentInfo(routes.params.id as string).then((res: any) => {
-    formState.device_name = res.data.device_name;
-    formState.ip_address = res.data.ip_address;
-    formState.firmware_version = res.data.firmware_version;
-    formState.location = res.data.location;
-    formState.device_mode = res.data.mode;
-  });
+  getEquipmentInfo({ device_id: routes.params.id as string }).then(
+    (res: any) => {
+      formState.device_name = res.data.device_name;
+      formState.ip_address = res.data.ip_address;
+      formState.firmware_version = res.data.firmware_version;
+      formState.location = res.data.location;
+      formState.device_mode = res.data.mode;
+    }
+  );
 });
 
 interface FormState {
@@ -112,9 +114,6 @@ const onSubmit = () => {
       });
     })
     .catch(() => {});
-};
-const resetForm = () => {
-  formRef.value.resetFields();
 };
 
 const backtoList = () => {

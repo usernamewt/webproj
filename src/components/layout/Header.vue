@@ -1,8 +1,13 @@
 <template>
   <div class="header">
     <div class="title" v-if="type === 'equipmentlist'">
-      <LeftOutlined v-show="baseStore.header != '设备列表'" @click="toList" />
-      {{ baseStore.header }}
+      <LeftOutlined
+        v-show="
+          baseStore.header != '设备列表' && baseStore.header != '设备绑定'
+        "
+        @click="toList"
+      />
+      {{ header }}
     </div>
     <div class="title" v-else>
       <span style="font-weight: bolder">{{ baseStore.deviceLocation }}</span>
@@ -16,42 +21,48 @@ import { watch, ref, onMounted } from "vue";
 import { useLocale } from "../../hooks/languageHook";
 import { useTestStore } from "../../store";
 import { LogoutOutlined, LeftOutlined } from "@ant-design/icons-vue";
+import { userLogout } from "../../api/user";
 import router from "../../router";
 import { useRoute } from "vue-router";
+import { removeToken } from "../../utils/auth";
+import { message } from "ant-design-vue";
 const { t } = useLocale();
 const route = useRoute();
 const baseStore = useTestStore();
+const header = ref("设备列表");
 const type = ref("equipmentlist");
 const toList = () => {
   router.push("/deviceList");
 };
-onMounted(() => {
-  if (route.path.includes("/sourceAdd")) {
-    baseStore.header = "资源添加";
-  } else if (route.path.includes("/sourceList")) {
-    baseStore.header = "资源库";
-  } else if (route.path.includes("/deviceList")) {
-    baseStore.header = "设备列表";
-  } else {
-    baseStore.header = "设备详情";
-  }
-});
-watch(baseStore, () => {
-  switch (baseStore.menuType) {
-    case "equipmentlist":
-      type.value = "equipmentlist";
-      break;
-    case "acceryon":
-      type.value = "acceryon";
-      break;
-    default:
-      break;
-  }
-});
+onMounted(() => {});
+watch(
+  route,
+  (nroute) => {
+    if (nroute.path.includes("/sourceAdd")) {
+      header.value = "资源添加";
+    } else if (nroute.path.includes("/sourceList")) {
+      header.value = "资源库";
+    } else if (nroute.path.includes("/deviceList")) {
+      header.value = "设备列表";
+    } else if (nroute.path.includes("/setting")) {
+      header.value = "设备绑定";
+    } else {
+      header.value = "设备列表";
+    }
+  },
+  { immediate: true, deep: true }
+);
 
 const logout = () => {
-  localStorage.removeItem("userInfo");
-  router.push("/login");
+  userLogout().then((res: any) => {
+    if (res.code === 0) {
+      localStorage.removeItem("userInfo");
+      removeToken();
+      router.push("/login");
+    } else {
+      message.error(res.msg);
+    }
+  });
 };
 </script>
 

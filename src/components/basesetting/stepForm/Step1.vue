@@ -8,10 +8,22 @@
       :labelCol="labelCol"
       :wrapperCol="wrapperCol"
     >
-      <a-form-item label="工作模式" name="mode">
-        <a-radio-group v-model:value="form.mode" button-style="solid">
-          <a-radio value="a">路由模式</a-radio>
-          <a-radio value="b">透明模式</a-radio>
+      <a-form-item ref="name" label="设备名称" name="device_name">
+        <a-input v-model:value="form.device_name" />
+      </a-form-item>
+      <a-form-item label="ip地址" name="ip_address">
+        <a-input v-model:value="form.ip_address" />
+      </a-form-item>
+      <a-form-item label="防火墙版本" name="firmware_version">
+        <a-input v-model:value="form.firmware_version" />
+      </a-form-item>
+      <a-form-item label="地址" name="location">
+        <a-input v-model:value="form.location" />
+      </a-form-item>
+      <a-form-item label="工作模式" name="device_mode">
+        <a-radio-group v-model:value="form.device_mode" button-style="solid">
+          <a-radio-button value="Bridge">Bridge</a-radio-button>
+          <a-radio-button value="Router">Router</a-radio-button>
         </a-radio-group>
       </a-form-item>
       <a-form-item :wrapperCol="{ span: 19, offset: 5 }">
@@ -21,11 +33,11 @@
     <a-divider />
     <div class="step-form-style-desc">
       <h3>说明</h3>
-      <h4>转账到支付宝账户</h4>
+      <h4>工作模式</h4>
       <p>
         如果需要，这里可以放一些关于产品的常见问题说明。如果需要，这里可以放一些关于产品的常见问题说明。如果需要，这里可以放一些关于产品的常见问题说明。
       </p>
-      <h4>转账到银行卡</h4>
+      <h4>url</h4>
       <p>
         如果需要，这里可以放一些关于产品的常见问题说明。如果需要，这里可以放一些关于产品的常见问题说明。如果需要，这里可以放一些关于产品的常见问题说明。
       </p>
@@ -34,20 +46,53 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, UnwrapRef, ref } from "vue";
+import { reactive, UnwrapRef, ref, onMounted } from "vue";
 import type { Rule } from "ant-design-vue/es/form";
 interface FormState {
-  mode: string;
+  device_mode: string;
+  device_name: string;
+  ip_address: string;
+  firmware_version: string;
+  location: string;
 }
+import { getEquipmentInfo } from "../../../api/user";
+import { useRoute } from "vue-router";
+const route = useRoute();
 let labelCol = ref({ lg: { span: 5 }, sm: { span: 5 } });
 let wrapperCol = ref({ lg: { span: 19 }, sm: { span: 19 } });
 let formRef = ref();
+onMounted(() => {
+  initDevice();
+});
+
+const initDevice = async () => {
+  const res: any = await getEquipmentInfo({
+    device_sn: route.params.id as string,
+  });
+  form.device_name = res.data.device_name;
+  form.ip_address = res.data.ip_address;
+  form.firmware_version = res.data.firmware_version;
+  form.location = res.data.location;
+  form.device_mode = res.data.device_mode;
+};
 const emits = defineEmits(["nextStep"]);
 const rules: Record<string, Rule[]> = {
-  mode: [{ required: true, message: "请选择工作模式", trigger: "change" }],
+  device_mode: [
+    { required: true, message: "请选择工作模式", trigger: "change" },
+  ],
+  device_name: [{ required: true, message: "请输入设备名称", trigger: "blur" }],
+  ip_address: [{ required: true, message: "请输入ip地址", trigger: "blur" }],
+  firmware_version: [
+    { required: true, message: "请输入防火墙版本", trigger: "blur" },
+  ],
+  location: [{ required: true, message: "请输入地址", trigger: "blur" }],
 };
 const form: UnwrapRef<FormState> = reactive({
-  mode: "a",
+  device_mode: "Bridge",
+  device_name: "",
+  ip_address: "",
+  firmware_version: "",
+  location: "",
 });
 const nextStep = () => {
   formRef
@@ -55,9 +100,7 @@ const nextStep = () => {
     .then(() => {
       emits("nextStep", form);
     })
-    .catch(() => {
-      console.log("error");
-    });
+    .catch(() => {});
 };
 </script>
 

@@ -1,39 +1,53 @@
 <template>
   <div>
     <a-row :gutter="16">
-      <a-col :xs="24" :lg="12" v-for="item in dataSource" :key="item.id">
+      <a-col
+        :xs="24"
+        :lg="12"
+        v-for="outeritem in dataSource"
+        :key="outeritem.id"
+      >
         <a-card
           hoverable
           style="margin-bottom: 3vh; min-width: 300px"
-          @click.stop="toSourceList(item)"
+          @click.stop="toSourceList(outeritem)"
         >
           <template #title>
-            <span style="margin-right: 10px" v-if="!item.titleEdit">{{
-              item.res_name || "默认名称"
+            <span style="margin-right: 10px" v-if="!outeritem.titleEdit">{{
+              outeritem.res_name || "默认名称"
             }}</span>
             <a-input
               v-else
               style="width: 40%"
-              :ref="(ref) => (item.toRef = ref)"
-              @blur="editTitle(item)"
+              :ref="(ref) => (outeritem.toRef = ref)"
+              @blur="editTitle(outeritem)"
               size="small"
               v-model:value="titleVal"
               placeholder="Basic usage"
             />
-            <edit-outlined key="edit" @click.stop="toggleTitle(item)" />
-            <DeleteOutlined />
+            <edit-outlined
+              v-if="outeritem.toggleUrl && outeritem.res_type === 0"
+              key="edit"
+              @click.stop="toggleTitle(outeritem)"
+              style="margin: 0 10px"
+            />
+
+            <a-popconfirm
+              cancelText="取消"
+              okText="确定"
+              v-if="dataSource.length"
+              title="确认删除?"
+              @confirm.stop="deleteItem(outeritem)"
+            >
+              <DeleteOutlined v-if="outeritem.toggleUrl" />
+            </a-popconfirm>
           </template>
           <template #extra
-            ><a href="javascript:void(0);" @click="toggleUrlShow(item)"
+            ><a href="javascript:void(0);" @click="toggleUrlShow(outeritem)"
               >详细</a
             ></template
           >
-          <!-- <template #actions>
-            <plus-outlined key="setting" @click.stop="add(item)" />
-            <edit-outlined key="edit" @click.stop="remove(item)" />
-          </template> -->
-          <!-- <a-card-meta :description="'状态:' + (item.status || '未知')">
-          </a-card-meta> -->
+
           <span
             style="
               display: flex;
@@ -43,55 +57,97 @@
             ><div>
               <span style="margin-right: 10px">状态:</span>
               <a-tag
-                v-if="item.status === -99"
+                v-if="outeritem.status === -99"
                 :bordered="false"
                 color="warning"
                 >启动中</a-tag
               >
               <a-tag
-                v-else-if="item.status === 1"
+                v-else-if="outeritem.status === 1"
                 :bordered="false"
                 color="success"
                 >运行中</a-tag
               >
               <a-tag
-                v-else-if="item.status === 0"
+                v-else-if="outeritem.status === 0"
                 :bordered="false"
                 color="error"
                 >掉线</a-tag
               >
             </div>
-            <div v-if="item.toggleUrl">
-              <PlusCircleOutlined @click="addUrl(item)" />
+            <div v-if="outeritem.toggleUrl && outeritem.res_type === 0">
+              <PlusCircleOutlined @click="addUrl(outeritem)" />
             </div>
           </span>
 
           <a-list
-            v-show="item.toggleUrl"
+            v-show="outeritem.toggleUrl"
             style="margin-top: 10px"
             size="small"
             bordered
-            :data-source="item.data"
+            :data-source="outeritem.data"
             :pagination="true"
+            v-if="outeritem.res_type === 0"
           >
-            <template #renderItem="{ item }">
-              <a-list-item @click="toggleEditUrl(item)" v-if="!item.editable">
-                <span>{{ item.original_url }}</span>
-              </a-list-item>
-              <a-list-item v-else>
+            <template #renderItem="{ item, index }">
+              <a-list-item>
+                <span v-if="!item.editable" @click.stop="toggleEditUrl(item)">{{
+                  item.original_url
+                }}</span>
                 <a-input
+                  v-else
                   autofocus
                   style="width: 40%"
                   :ref="(ref) => (item.toRef = ref)"
-                  @blur="editUrl(item)"
+                  @blur="editUrl(outeritem, item)"
                   size="small"
                   v-model:value="item.original_url"
                   placeholder="Basic usage"
                 />
+                <a-popconfirm
+                  cancelText="取消"
+                  okText="确定"
+                  v-if="dataSource.length"
+                  title="确认删除?"
+                  @confirm.stop="deleteUrl(outeritem, index)"
+                  placement="leftTop"
+                >
+                  <DeleteOutlined />
+                </a-popconfirm>
+                <!-- <DeleteOutlined @click.stop="deleteUrl(outeritem, item)" /> -->
+              </a-list-item>
+              <!-- <a-list-item v-else>
+                
+                <a-popconfirm
+                  cancelText="取消"
+                  okText="确定"
+                  v-if="dataSource.length"
+                  title="确认删除?"
+                  @confirm.stop="deleteUrl(item, index)"
+                >
+                  <DeleteOutlined />
+                </a-popconfirm>
+              </a-list-item> -->
+            </template>
+          </a-list>
+
+          <a-list
+            v-show="outeritem.toggleUrl"
+            style="margin-top: 10px"
+            size="small"
+            bordered
+            :data-source="outeritem.data"
+            :pagination="true"
+            v-else
+          >
+            <template #renderItem="{ item }">
+              <a-list-item>
+                <span>{{ item.original_url }}</span>
               </a-list-item>
             </template>
-          </a-list> </a-card
-      ></a-col>
+          </a-list>
+        </a-card></a-col
+      >
     </a-row>
   </div>
 </template>
@@ -103,20 +159,81 @@ import {
   getAccelerateList,
   getAccelerateUrl,
   editAccelerate,
+  deleteAccelerate,
 } from "../../api/user";
-import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons-vue";
+import {
+  EditOutlined,
+  PlusCircleOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 let dataSource = ref([]);
 const toSourceList = () => {};
 const deviceId = ref("");
 const route = useRoute();
 const titleVal = ref("");
-const titleRef = ref();
 onMounted(() => {
   deviceId.value = route.params.id as string;
   initList();
 });
 
+// 编辑title
+const editTitle = (item: any) => {
+  item.titleEdit = false;
+  item.res_name = titleVal.value;
+  const params = {
+    resource_id: item.id,
+    resource_name: titleVal.value,
+    resource_type: item.res_type,
+    node_ip: item.node_ip,
+    urls: item.data.map((el: any) => {
+      return el.original_url;
+    }),
+  };
+  editAccelerate(params).then((res: any) => {
+    if (res.code === 0) {
+      message.success("修改成功");
+    } else {
+    }
+  });
+};
+
+// 判断是否是url
+const isUrl = (val: string) => {
+  let regex =
+    /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
+  return regex.test(val);
+};
+// url编辑
+const editUrl = (item: any, input: any) => {
+  // 判断是否是url
+  if (!input.original_url) {
+    // message.error("url不能为空");
+    return;
+  }
+  if (!isUrl(input.original_url)) {
+    message.error("url地址不正确");
+  } else {
+    item.editable = false;
+    const params = {
+      resource_id: item.id,
+      resource_name: item.res_name,
+      resource_type: item.res_type,
+      node_ip: item.node_ip,
+      urls: item.data.map((el: any) => {
+        return el.original_url;
+      }),
+    };
+    editAccelerate(params).then((res: any) => {
+      if (res.code === 0) {
+        message.success("修改成功");
+        input.editable = false;
+      } else {
+      }
+    });
+  }
+};
+// 初始化资源列表
 const initList = () => {
   getAccelerateList(deviceId.value).then((res: any) => {
     dataSource.value = res.data.map((el: any) => {
@@ -128,32 +245,19 @@ const initList = () => {
   });
 };
 
-const editTitle = (item: any) => {
-  item.titleEdit = false;
-  item.res_name = titleVal.value;
-  // TODO:通过资源id修改资源名称
-  confrimEdit();
+// 删除资源
+const deleteItem = (item: any) => {
+  message.success("删除成功");
+  deleteAccelerate(item.id).then((res: any) => {
+    if (res.code === 0) {
+      initList();
+    } else {
+      message.error(res.msg);
+    }
+  });
 };
 
-// 统一编辑方法
-const confrimEdit = async () => {
-  const params = {
-    device_id: 0,
-    resource_name: "string",
-    resource_type: 0,
-    resource_list: [],
-    node_ip: "string",
-    urls: [],
-  };
-  let res = await editAccelerate(params);
-  if (res.code === 0) {
-    message.success("修改成功");
-    initList();
-  } else {
-    message.error(res.msg);
-  }
-};
-
+// 添加url
 const addUrl = (item: any) => {
   item.data.push({
     original_url: "",
@@ -165,6 +269,7 @@ const addUrl = (item: any) => {
   });
 };
 
+// 切换title修改状态
 const toggleTitle = (item: any) => {
   dataSource.value.forEach((el: any) => {
     if (el.id !== item.id) {
@@ -179,6 +284,7 @@ const toggleTitle = (item: any) => {
   });
 };
 
+// 切换url是否展示，提交接口查询url
 const toggleUrlShow = (item: any) => {
   // TODO:通过资源id获取url
   getAccelerateUrl(item.id).then((res: any) => {
@@ -194,14 +300,36 @@ const toggleUrlShow = (item: any) => {
   });
 };
 
+// 切换url编辑状态
 const toggleEditUrl = (item: any) => {
   item.editable = true;
   nextTick(() => {
     item.toRef.focus();
   });
 };
-const editUrl = (item: any) => {
-  item.editable = false;
+
+// 删除url
+const deleteUrl = (item: any, index: number) => {
+  const urldel = item.data[index].original_url;
+  item.data.splice(index, 1);
+  const params = {
+    resource_id: item.id,
+    resource_name: item.res_name,
+    resource_type: item.res_type,
+    node_ip: item.node_ip,
+    urls: item.data.map((el: any) => {
+      return el.original_url;
+    }),
+  };
+  editAccelerate(params).then((res: any) => {
+    if (res.code === 0) {
+      message.success("删除成功");
+    } else {
+      item.data.push({
+        original_url: urldel,
+      });
+    }
+  });
 };
 </script>
 

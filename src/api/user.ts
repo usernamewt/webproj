@@ -22,8 +22,8 @@ export const getEquipmentList = (userId:string):Res<ItypeAPI<any>>=>{
 }
 
 // 获取设备信息
-export const getEquipmentInfo = (deviceId:string):Res<ItypeAPI<any>>=>{
-    return request.get("/device/get?device_id="+deviceId)
+export const getEquipmentInfo = (data:{device_id?:string,device_sn?:string}):Res<ItypeAPI<any>>=>{
+    return request.get("/device/get",{params:data})
 }
 
 // 修改设备信息
@@ -36,7 +36,6 @@ export const registerDevice = (data:{device_sn:string,firmware_version:string}):
     return request.post("/device/register",data)
 }
 // 添加设备
-// TODO: 资源库添加
 export const addDevice = (data:{device_name:string}):Res<null>=>{
     return request.post("/device/add",data)
 }
@@ -71,10 +70,15 @@ export const addAccelerate = (data:any):Res<null>=>{
     return request.post("/resource/add",data)
 }
 
-// TODO:
 // 修改加速资源
 export const editAccelerate = (data:any):Res<null>=>{
     return request.post("/resource/edit",data)
+}
+
+// TODO:
+// 删除加速资源
+export const deleteAccelerate = (data:string):Res<null>=>{
+    return request.get("/resource/del?resource_id="+ data)
 }
 
 /**
@@ -84,8 +88,23 @@ export const editAccelerate = (data:any):Res<null>=>{
  */
 
 // 获取用户信息
-export const getUserInfo = (userId:string):Res<ItypeAPI<any>>=>{
-    return request.get("/user/info?user_id="+userId)
+export const getUserInfo = ():Res<ItypeAPI<any>>=>{
+    return request.get("/user/info")
+}
+
+// 获取验证码
+export const getVerifyCode = (data:{mobile:string}):Res<null>=>{
+    return request.get("/user/send_sms",{params:data})
+}
+
+// 用户登陆
+export const userLogin = (data:{mobile:string,vcode:string}):Res<null>=>{
+    return request.get("/user/login",{params:data})
+}
+
+// 用户退出
+export const userLogout = ():Res<null>=>{
+    return request.get("/user/logout")
 }
 
 /**
