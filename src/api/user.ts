@@ -42,7 +42,7 @@ export const addDevice = (data:{device_name:string}):Res<null>=>{
 
 // 绑定设备到用户
 export const bindDevice = (data:{user_id:string,device_sn:string}):Res<null>=>{
-    return request.post("/device/bind",data)
+    return request.get("/device/bind",{params:data})
 }
 
 /**

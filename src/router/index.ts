@@ -21,6 +21,12 @@ const routes: Array<RouteRecordRaw> = [
     redirect: "/deviceList",
     children: [
       {
+        path: "/bindDevice/:id",
+        name: "MiddCenter",
+        component: () =>
+          import("../components/basedevice/deviceBind.vue"),
+      },
+      {
         path: "/setting/:id",
         name: "Setting",
         component: () =>

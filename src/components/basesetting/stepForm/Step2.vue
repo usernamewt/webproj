@@ -22,10 +22,10 @@
       :labelCol="{ lg: { span: 7 }, sm: { span: 7 } }"
       :wrapperCol="{ lg: { span: 10 }, sm: { span: 17 } }"
       :model="libraryform"
-      :rule="libraryRules"
+      :rules="libraryRules"
       v-if="form.target === 1"
     >
-      <a-form-item :label="'搜索资源库'" name="deviceName">
+      <a-form-item :label="'搜索资源库'">
         <a-input
           v-model:value="libraryform.deviceName"
           :placeholder="'搜索'"
@@ -40,7 +40,7 @@
         <a-tag
           closable
           @close="addSource(item)"
-          v-for="item in choosedLibrary"
+          v-for="item in libraryform.choosedLibrary"
           :key="item"
           >{{ item.resource_name }}</a-tag
         >
@@ -100,6 +100,7 @@
         :labelCol="{ lg: { span: 7 }, sm: { span: 7 } }"
         :wrapperCol="{ lg: { span: 10 }, sm: { span: 17 } }"
         label="出口"
+        name="libraryTag"
       >
         <a-space wrap>
           <!-- <a-checkable-tag
@@ -112,7 +113,7 @@
             {{ tag.location }}
           </a-checkable-tag> -->
 
-          <a-radio-group v-model:value="libraryTag">
+          <a-radio-group v-model:value="libraryform.libraryTag">
             <a-radio
               v-for="tag in tagsData"
               :key="tag"
@@ -137,6 +138,7 @@
       :labelCol="{ lg: { span: 7 }, sm: { span: 7 } }"
       :wrapperCol="{ lg: { span: 10 }, sm: { span: 17 } }"
       :model="customform"
+      :rules="customRules"
       v-else
     >
       <a-form-item :label="'自定义资源名称'" name="device">
@@ -154,9 +156,9 @@
         </a-input>
       </a-form-item>
       <!-- 自定义url列表 -->
-      <a-form-item label="url列表">
+      <a-form-item label="url列表" name="urls">
         <a-list size="small">
-          <a-list-item :key="index" v-for="(item, index) in data">
+          <a-list-item :key="index" v-for="(item, index) in customform.urls">
             <div
               class="list-content"
               style="display: flex; justify-content: space-between; width: 100%"
@@ -166,9 +168,9 @@
           </a-list-item>
         </a-list>
       </a-form-item>
-      <a-form-item label="出口">
+      <a-form-item label="出口" name="customTag">
         <a-space wrap>
-          <a-radio-group v-model:value="customTag">
+          <a-radio-group v-model:value="customform.customTag">
             <a-radio
               v-for="tag in tagsData"
               :key="tag"
@@ -198,89 +200,18 @@ import { useRoute } from "vue-router";
 const form = ref({
   target: 1,
 });
-const customform = ref({
+const customform = ref<any>({
   url: "",
   device: "",
+  urls: [],
+  customTag: "",
 });
-const libraryform = ref({
-  deviceName: [],
+const libraryform = ref<any>({
+  deviceName: "",
   url: [],
+  libraryTag: "",
+  choosedLibrary: [],
 });
-
-const radioformRule: Record<string, Rule[]> = {
-  target: [{ required: true, message: "请选择工作模式", trigger: "change" }],
-};
-const custom = ref(null);
-const radioform = ref(null);
-const library = ref();
-const timer = ref(0);
-const totalPage = ref(0);
-// 加速url
-const data = ref<any[]>([]);
-const clicked = ref(false);
-const tagsData = ref([]);
-//
-const customTag = ref<any>();
-//
-const libraryTag = ref<any>();
-// 资料库
-const libraryList = ref<any>([]);
-const searchList = ref<any>([]);
-const initLoading = ref(true);
-const loading = ref(false);
-const pageSize = ref(5);
-const current = ref(1);
-
-const emits = defineEmits(["nextStep", "prevStep"]);
-// deviceId
-const deviceId = ref("");
-// 选中资料库
-const choosedLibrary = ref<any>([]);
-// 移除选中
-const removeItem = (item: any) => {
-  choosedLibrary.value = choosedLibrary.value.filter((el: any) => {
-    return el.id !== item.id;
-  });
-};
-
-// 获取当前param
-const getParams = () => {
-  let params: any = {
-    resource_type: "",
-    resource_name: "",
-    resource_list: [],
-    device_id: route.params.id as string,
-    urls: [],
-    node_ip: "",
-  };
-  //   资源库
-  if (form.value.target === 1) {
-    if (choosedLibrary.value.length === 0) {
-      message.error("请选择加速资源");
-      return false;
-    }
-    params.node_ip = libraryTag.value;
-    params.resource_list = choosedLibrary.value.map((i: any) => {
-      return i.resource_name;
-    });
-    params.resource_type = "1";
-    clicked.value = true;
-  }
-  //   自定义
-  else {
-    if (data.value.length === 0) {
-      message.error("请添加url");
-      return false;
-    }
-    params.node_ip = customTag.value;
-    params.resource_type = "0";
-    params.resource_name = customform.value.device;
-    params.urls = data.value.map((el: any) => {
-      return el.url;
-    });
-  }
-  return params;
-};
 
 // 资料库规则
 const libraryRules = {
@@ -292,6 +223,104 @@ const libraryRules = {
       type: "array",
     },
   ],
+  libraryTag: [
+    {
+      required: true,
+      message: "请选择出口节点",
+    },
+  ],
+};
+
+// 自定义规则
+const customRules = {
+  urls: [
+    {
+      required: true,
+      message: "请添加加速url",
+    },
+  ],
+  device: [{ required: true, message: "请输入设备名称" }],
+  customTag: [{ required: true, message: "请选择出口节点" }],
+};
+
+const radioformRule: Record<string, Rule[]> = {
+  target: [{ required: true, message: "请选择工作模式", trigger: "change" }],
+};
+const custom = ref();
+const radioform = ref(null);
+const library = ref();
+const timer = ref(0);
+const totalPage = ref(0);
+// 加速url
+const data = ref<any[]>([]);
+const clicked = ref(false);
+const tagsData = ref([]);
+// 资料库
+const libraryList = ref<any>([]);
+const searchList = ref<any>([]);
+const initLoading = ref(true);
+const loading = ref(false);
+const pageSize = ref(5);
+const current = ref(1);
+
+const emits = defineEmits(["nextStep", "prevStep"]);
+// deviceId
+const deviceId = ref("");
+// 移除选中
+const removeItem = (item: any) => {
+  libraryform.value.choosedLibrary = libraryform.value.choosedLibrary.filter(
+    (el: any) => {
+      return el.id !== item.id;
+    }
+  );
+};
+
+// 获取当前param
+const handleSubmit = () => {
+  let params: any = {
+    resource_type: "",
+    resource_name: "",
+    resource_list: [],
+    device_id: "",
+    urls: [],
+    node_ip: "",
+  };
+  //   资源库
+  if (form.value.target === 1) {
+    library.value
+      .validate()
+      .then(() => {
+        params.node_ip = libraryform.value.libraryTag;
+        params.resource_list = libraryform.value.choosedLibrary.map(
+          (i: any) => {
+            return i.resource_name;
+          }
+        );
+        params.resource_type = "1";
+        clicked.value = true;
+        emits("nextStep", params);
+      })
+      .catch(() => {
+        return {};
+      });
+  }
+  //   自定义
+  else {
+    custom.value
+      .validate()
+      .then(() => {
+        params.node_ip = customform.value.customTag;
+        params.resource_type = "0";
+        params.resource_name = customform.value.device;
+        params.urls = data.value.map((el: any) => {
+          return el.url;
+        });
+        emits("nextStep", params);
+      })
+      .catch(() => {
+        return {};
+      });
+  }
 };
 
 // 路由
@@ -343,7 +372,8 @@ const nextPage = (val: number) => {
   loading.value = true;
   searchList.value = libraryList.value
     .filter((i: any) => {
-      return i.resource_name.indexOf(libraryform.value.deviceName) !== -1;
+      const st = i.resource_name.toLocaleLowerCase();
+      return st.indexOf(libraryform.value.deviceName) !== -1;
     })
     .slice(
       pageSize.value * (current.value - 1),
@@ -374,9 +404,9 @@ const addUrl = () => {
     return;
   }
 
-  data.value.push({
+  customform.value.urls.push({
     url: customform.value.url,
-    id: data.value.length,
+    id: customform.value.urls.length,
   });
   customform.value.url = "";
 };
@@ -404,17 +434,9 @@ const searchOne = () => {
 const addSource = (item: any) => {
   item.checked = !item.checked;
   if (item.checked) {
-    choosedLibrary.value.push(item);
+    libraryform.value.choosedLibrary.push(item);
   } else {
     removeItem(item);
-  }
-};
-
-// 处理提交下一步
-const handleSubmit = () => {
-  const params = getParams();
-  if (params) {
-    emits("nextStep", params);
   }
 };
 

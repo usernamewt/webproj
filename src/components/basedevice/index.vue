@@ -1,29 +1,28 @@
 <template>
-  <div class="cards" v-if="dataSource.length > 0">
-    <a-card
-      v-for="item in dataSource"
-      :key="item.id"
-      hoverable
-      style="margin-bottom: 3vh; width: 300px"
-      class="card-flex"
-      @click.stop="toSourceList(item)"
-    >
-      <template #cover> </template>
-      <template #actions>
-        <plus-outlined key="setting" @click.stop="addSource(item)" />
-        <edit-outlined key="edit" @click.stop="toDetail(item)" />
-      </template>
-      <a-card-meta
-        :title="item.device_name || '默认名称'"
-        :description="'位置:' + (item.location || '未知')"
+  <MainContainer>
+    <div class="cards" v-if="dataSource.length > 0">
+      <a-card
+        v-for="item in dataSource"
+        :key="item.id"
+        hoverable
+        style="margin-bottom: 3vh; width: 300px"
+        class="card-flex"
+        @click.stop="toSourceList(item)"
       >
-        <!-- <template #avatar>
-          <a-avatar src="https://joeschmoe.io/api/v1/random" />
-        </template> -->
-      </a-card-meta>
-    </a-card>
-  </div>
-  <a-empty v-else />
+        <template #cover> </template>
+        <template #actions>
+          <plus-outlined key="setting" @click.stop="addSource(item)" />
+          <edit-outlined key="edit" @click.stop="toDetail(item)" />
+        </template>
+        <a-card-meta
+          :title="item.device_name || '默认名称'"
+          :description="'位置:' + (item.location || '未知')"
+        >
+        </a-card-meta>
+      </a-card>
+    </div>
+    <a-empty v-else />
+  </MainContainer>
 </template>
 
 <script lang="ts" setup>
@@ -34,6 +33,7 @@ import { getEquipmentList } from "../../api/user";
 import router from "../../router";
 import { useTestStore } from "../../store";
 import { getStorage } from "../../utils/storage";
+import MainContainer from "../MainContainer.vue";
 const dataSource = ref<any>([]);
 onMounted(() => {
   baseStore.header = "设备列表";

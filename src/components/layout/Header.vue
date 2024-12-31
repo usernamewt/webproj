@@ -2,8 +2,8 @@
   <div class="header">
     <div class="title" v-if="type === 'equipmentlist'">
       <LeftOutlined
-        v-show="
-          baseStore.header != '设备列表' && baseStore.header != '设备绑定'
+        v-if="
+          !(route.path.includes('deviceList') || route.path.includes('setting'))
         "
         @click="toList"
       />
@@ -15,6 +15,10 @@
     <LogoutOutlined class="logout" @click="logout" />
   </div>
 </template>
+
+<!-- v-show="
+          baseStore.header != '设备列表' && baseStore.header != '设备绑定'
+        " -->
 
 <script lang="ts" setup>
 import { watch, ref, onMounted } from "vue";
@@ -46,8 +50,12 @@ watch(
       header.value = "设备列表";
     } else if (nroute.path.includes("/setting")) {
       header.value = "设备绑定";
+    } else if (nroute.path.includes("/deviceDetail")) {
+      header.value = "设备编辑";
+    } else if (nroute.path.includes("/setting")) {
+      header.value = "设备绑定";
     } else {
-      header.value = "设备列表";
+      header.value = "404";
     }
   },
   { immediate: true, deep: true }

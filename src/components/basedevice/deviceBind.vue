@@ -17,6 +17,7 @@ onMounted(() => {
         // 未绑定跳转到绑定页面
         router.push("/setting/" + sn);
       } else {
+        message.info("该设备已绑定");
         router.push("/deviceList");
       }
     } else {

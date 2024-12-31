@@ -4,7 +4,7 @@
       <a-result
         title="确认条款"
         :is-success="true"
-        sub-title="预计两小时内到账"
+        sub-title="确认条款后绑定设备"
         style="max-width: 560px; margin: 40px auto 0"
       >
         <div class="information">

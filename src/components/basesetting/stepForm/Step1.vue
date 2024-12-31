@@ -54,6 +54,7 @@ interface FormState {
   ip_address: string;
   firmware_version: string;
   location: string;
+  device_id: string;
 }
 import { getEquipmentInfo } from "../../../api/user";
 import { useRoute } from "vue-router";
@@ -73,7 +74,8 @@ const initDevice = async () => {
   form.ip_address = res.data.ip_address;
   form.firmware_version = res.data.firmware_version;
   form.location = res.data.location;
-  form.device_mode = res.data.device_mode;
+  form.device_mode = res.data.mode;
+  form.device_id = res.data.id;
 };
 const emits = defineEmits(["nextStep"]);
 const rules: Record<string, Rule[]> = {
@@ -93,6 +95,7 @@ const form: UnwrapRef<FormState> = reactive({
   ip_address: "",
   firmware_version: "",
   location: "",
+  device_id: "",
 });
 const nextStep = () => {
   formRef

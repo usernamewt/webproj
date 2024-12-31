@@ -72,15 +72,9 @@ onMounted(() => {});
     </a-layout-sider>
     <a-layout>
       <Header />
-      <!-- <a-breadcrumb :routes="router">
-        <template #itemRender="{ route, params, routes, paths }">
-          <span v-if="routes.indexOf(route) === routes.length - 1">{{route.breadcrumbName}}</span>
-          <router-link v-else :to="paths.join('/')">{{route.name}}</router-link>
-        </template>
-      </a-breadcrumb> -->
-      <a-layout-content :style="{ margin: '24px 16px 0' }">
-        <router-view />
-      </a-layout-content>
+      <div style="box-sizing: border-box; padding: 10px">
+        <slot></slot>
+      </div>
       <a-layout-footer style="text-align: center"> </a-layout-footer>
     </a-layout>
   </a-layout>
@@ -88,13 +82,17 @@ onMounted(() => {});
 </template>
 
 <style scoped lang="less">
+// :deep .ant-menu-item-selected {
+//   background-color: #60a5fa !important;
+// }
 .logo {
   height: 32px;
-  background: rgba(255, 255, 255, 0.2);
+  // background: rgba(255, 255, 255, 0.2);
   text-align: center;
   line-height: 32px;
   color: #fff;
   margin: 16px;
+  font-weight: bolder;
   cursor: pointer;
 }
 

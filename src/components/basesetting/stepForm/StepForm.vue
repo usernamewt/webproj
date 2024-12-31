@@ -1,28 +1,30 @@
 <template>
-  <page-header-wrapper>
-    <!-- PageHeader 第二种使用方式 (v-slot) -->
-    <a-card :bordered="false">
-      <a-steps class="steps" :current="currentTab">
-        <a-step title="设备信息" />
-        <a-step title="填写加速资源" />
-        <a-step title="条款确认" />
-        <!-- <a-step title="完成" /> -->
-      </a-steps>
-      <div class="content">
-        <step1 v-show="currentTab === 0" @nextStep="setDeviceMode" />
-        <step2
-          v-show="currentTab === 1"
-          @nextStep="setAddParam"
-          @prevStep="prevStep"
-        />
-        <step3
-          v-show="currentTab === 2"
-          @prevStep="prevStep"
-          @finish="finish"
-        />
-      </div>
-    </a-card>
-  </page-header-wrapper>
+  <MainContainer>
+    <page-header-wrapper>
+      <!-- PageHeader 第二种使用方式 (v-slot) -->
+      <a-card :bordered="false">
+        <a-steps class="steps" :current="currentTab">
+          <a-step title="设备信息" />
+          <a-step title="填写加速资源" />
+          <a-step title="条款确认" />
+          <!-- <a-step title="完成" /> -->
+        </a-steps>
+        <div class="content">
+          <step1 v-show="currentTab === 0" @nextStep="setDeviceMode" />
+          <step2
+            v-show="currentTab === 1"
+            @nextStep="setAddParam"
+            @prevStep="prevStep"
+          />
+          <step3
+            v-show="currentTab === 2"
+            @prevStep="prevStep"
+            @finish="finish"
+          />
+        </div>
+      </a-card>
+    </page-header-wrapper>
+  </MainContainer>
 </template>
 
 <script lang="ts" setup>
@@ -32,7 +34,6 @@ import Step3 from "./Step3.vue";
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import {
-  getEquipmentInfo,
   addAccelerate,
   editEquipmentInfo,
   bindDevice,
@@ -40,6 +41,8 @@ import {
 import router from "../../../router";
 import { getStorage } from "../../../utils/storage";
 import { useTestStore } from "../../../store";
+import MainContainer from "../../MainContainer.vue";
+import { message } from "ant-design-vue";
 const route = useRoute();
 const deviceBase = ref<any>();
 const currentTab = ref(0);
@@ -49,22 +52,25 @@ const device_sn = ref("");
 const addParam = ref<any>();
 onMounted(() => {
   device_sn.value = route.params.id as string;
-  getDevice();
+  // getDevice();
 });
 
 const setDeviceMode = (mode: string) => {
   deviceBase.value = mode;
   nextStep();
 };
-const getDevice = async () => {
-  const res = await getEquipmentInfo({
-    device_sn: route.params.id as string,
-  });
-  deviceBase.value = res.data;
-};
+// const getDevice = async () => {
+//   const res = await getEquipmentInfo({
+//     device_sn: route.params.id as string,
+//   });
+//   deviceBase.value = res.data;
+// };
 
 const setAddParam = (param: any) => {
   addParam.value = param;
+  addParam.value.device_id = deviceBase.value.device_id;
+  console.log(addParam.value);
+
   nextStep();
 };
 
@@ -80,11 +86,17 @@ const prevStep = () => {
 };
 const finish = async () => {
   baseStore.boxLoading = true;
-  let addSource = await addAccelerate(addParam.value);
-  if (addSource.code == 0) {
-  }
+  // console.log("添加加速资源");
+  // console.log(addParam.value);
 
-  // 绑定设备信息
+  // console.log("设置设备信息");
+  // console.log(deviceBase.value);
+
+  // console.log("绑定设备");
+  // console.log({
+  //   user_id: getStorage("uid"),
+  //   device_sn: device_sn.value,
+  // });
   let setDevice = await editEquipmentInfo(deviceBase.value);
   if (setDevice.code == 0) {
   }
@@ -95,8 +107,11 @@ const finish = async () => {
   });
   if (bind.code == 0) {
   }
-  baseStore.boxLoading = false;
-  router.push("/user/equipment");
+
+  // 加速资源绑定慢，直接跳转
+  addAccelerate(addParam.value);
+  message.success("绑定成功");
+  router.push("/deviceList");
 };
 </script>
 

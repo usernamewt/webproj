@@ -1,37 +1,42 @@
 <template>
-  <a-form
-    style="background-color: #fff; padding: 40px; border-radius: 20px"
-    ref="formRef"
-    :model="formState"
-    :rules="rules"
-    :label-col="labelCol"
-    :wrapper-col="wrapperCol"
-  >
-    <a-form-item ref="name" label="设备名称" name="device_name">
-      <a-input v-model:value="formState.device_name" />
-    </a-form-item>
-    <a-form-item label="ip地址" name="ip_address">
-      <a-input v-model:value="formState.ip_address" />
-    </a-form-item>
-    <a-form-item label="防火墙版本" name="firmware_version">
-      <a-input v-model:value="formState.firmware_version" />
-    </a-form-item>
-    <a-form-item label="地址" name="location">
-      <a-input v-model:value="formState.location" />
-    </a-form-item>
-    <a-form-item label="模式" name="device_mode">
-      <!-- <a-input v-model:value="formState.device_mode" /> -->
-      <a-radio-group v-model:value="formState.device_mode" button-style="solid">
-        <a-radio-button value="Bridge">Bridge</a-radio-button>
-        <a-radio-button value="Router">Router</a-radio-button>
-      </a-radio-group>
-      <!-- Bridge  /  Router -->
-    </a-form-item>
-    <a-form-item :wrapper-col="{ span: 14, offset: 4 }">
-      <a-button type="primary" @click="backtoList">返回</a-button>
-      <a-button style="margin-left: 10px" @click="onSubmit">确认</a-button>
-    </a-form-item>
-  </a-form>
+  <MainContainer>
+    <a-form
+      style="background-color: #fff; padding: 40px; border-radius: 20px"
+      ref="formRef"
+      :model="formState"
+      :rules="rules"
+      :label-col="labelCol"
+      :wrapper-col="wrapperCol"
+    >
+      <a-form-item ref="name" label="设备名称" name="device_name">
+        <a-input v-model:value="formState.device_name" />
+      </a-form-item>
+      <a-form-item label="ip地址" name="ip_address">
+        <a-input v-model:value="formState.ip_address" />
+      </a-form-item>
+      <a-form-item label="防火墙版本" name="firmware_version">
+        <a-input v-model:value="formState.firmware_version" />
+      </a-form-item>
+      <a-form-item label="地址" name="location">
+        <a-input v-model:value="formState.location" />
+      </a-form-item>
+      <a-form-item label="模式" name="device_mode">
+        <!-- <a-input v-model:value="formState.device_mode" /> -->
+        <a-radio-group
+          v-model:value="formState.device_mode"
+          button-style="solid"
+        >
+          <a-radio-button value="Bridge">Bridge</a-radio-button>
+          <a-radio-button value="Router">Router</a-radio-button>
+        </a-radio-group>
+        <!-- Bridge  /  Router -->
+      </a-form-item>
+      <a-form-item :wrapper-col="{ span: 14, offset: 4 }">
+        <a-button type="primary" @click="backtoList">返回</a-button>
+        <a-button style="margin-left: 10px" @click="onSubmit">确认</a-button>
+      </a-form-item>
+    </a-form>
+  </MainContainer>
 </template>
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from "vue";
@@ -41,6 +46,7 @@ import { useRoute } from "vue-router";
 import router from "../../router";
 import { getEquipmentInfo, editEquipmentInfo } from "../../api/user";
 import { message } from "ant-design-vue";
+import MainContainer from "../MainContainer.vue";
 let routes = useRoute();
 onMounted(() => {
   getEquipmentInfo({ device_id: routes.params.id as string }).then(
