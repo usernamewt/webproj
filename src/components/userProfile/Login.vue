@@ -122,8 +122,12 @@ const onFinish = () => {
             setStorage("token", token);
             setToken(token);
             baseStore.uid = res.data.uid;
+            // 401登录的原路退回
             nextTick(() => {
-              router.push("/");
+              const redirect =
+                (router.currentRoute.value.query.redirect as string) ||
+                "/deviceList";
+              router.push(redirect);
             });
           } else {
             message.error(res.msg);

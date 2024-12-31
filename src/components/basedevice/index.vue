@@ -88,6 +88,7 @@ const toSourceList = (item: any) => {
 }
 @media (min-width: 768px) and (max-width: 991px) {
   .cards {
+    justify-content: space-between !important;
     .card-flex {
       width: calc(50% - 40px) !important;
     }
@@ -95,8 +96,10 @@ const toSourceList = (item: any) => {
 }
 @media (max-width: 767px) {
   .cards {
+    justify-content: center !important;
     .card-flex {
       width: 100vw !important;
+      margin-right: 0px !important;
     }
   }
 }

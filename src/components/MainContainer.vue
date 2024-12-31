@@ -73,9 +73,22 @@ onMounted(() => {});
     <a-layout>
       <Header />
       <div style="box-sizing: border-box; padding: 10px">
+        <!-- 内容插槽 -->
         <slot></slot>
       </div>
-      <a-layout-footer style="text-align: center"> </a-layout-footer>
+      <a-layout-footer
+        style="
+          text-align: center;
+          position: fixed;
+          bottom: 0;
+          width: 100vw;
+          color: #ccc;
+          left: 0;
+          background-color: transparent;
+        "
+      >
+        备案/许可证编号为：苏ICP备2024148714号
+      </a-layout-footer>
     </a-layout>
   </a-layout>
   <a-back-top />

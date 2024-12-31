@@ -2,6 +2,7 @@ import axios from 'axios'
 import router from '../router';
 import { getToken, removeToken } from './auth';
 import { message } from 'ant-design-vue';
+import { setStorage } from './storage';
 // 创建axios实例
 const request = axios.create({
     baseURL: '/api',// 所有的请求地址前缀部分
@@ -27,6 +28,8 @@ request.interceptors.request.use(
         else {
             config.headers["token"]= ""
             if(router.currentRoute.value.path!=='/login'&&router.currentRoute.value.path!=='/user/send_sms'){
+                setStorage('uid',null);
+                setStorage('token',null);
                 message.error("token失效，请重新登录");
                 router.push("/login");
             }
@@ -47,17 +50,24 @@ request.interceptors.response.use(
             // token失效，跳转到登录页面
             localStorage.removeItem("Admin-Token");
             removeToken();
-            router.push("/login");
+            router.push({
+                path: '/login'
+            });
         }
         return response.data
     },
     error => {  
         // 401 token失效
         if(error.response.status===401){
+            setStorage('uid',null);
+                setStorage('token',null);
             message.error("token失效，请重新登录");
             localStorage.removeItem("Admin-Token");
             removeToken();
-            router.push("/login");
+            router.push({
+                path: '/login',
+                query: { redirect: router.currentRoute.value.fullPath }
+            });
         }
 
         if(error.response.status===500){

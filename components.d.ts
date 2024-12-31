@@ -43,9 +43,11 @@ declare module 'vue' {
     Basedevice: typeof import('./src/components/basedevice/index.vue')['default']
     BaseEcharts: typeof import('./src/components/layout/BaseEcharts.vue')['default']
     BaseFormer: typeof import('./src/components/layout/BaseFormer.vue')['default']
+    Basesetting: typeof import('./src/components/basesetting/index.vue')['default']
     Basesource: typeof import('./src/components/basesource/index.vue')['default']
     BaseSteps: typeof import('./src/components/component/BaseSteps.vue')['default']
     BaseTable: typeof import('./src/components/layout/BaseTable.vue')['default']
+    BaseUrls: typeof import('./src/components/component/BaseUrls.vue')['default']
     DeviceBind: typeof import('./src/components/basedevice/deviceBind.vue')['default']
     DeviceDetail: typeof import('./src/components/basedevice/deviceDetail.vue')['default']
     Header: typeof import('./src/components/layout/Header.vue')['default']
@@ -61,5 +63,6 @@ declare module 'vue' {
     Step2: typeof import('./src/components/basesetting/stepForm/Step2.vue')['default']
     Step3: typeof import('./src/components/basesetting/stepForm/Step3.vue')['default']
     StepForm: typeof import('./src/components/basesetting/stepForm/StepForm.vue')['default']
+    TargetList: typeof import('./src/components/component/TargetList.vue')['default']
   }
 }

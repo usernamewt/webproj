@@ -79,7 +79,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   // baseStore.boxLoading = true;
-  if (to.path === "/login") {
+  if (to.path.includes( "/login")) {
     next();
   } else {
     let id = getStorage('uid')
